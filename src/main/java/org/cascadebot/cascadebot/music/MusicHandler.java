@@ -13,6 +13,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
@@ -60,6 +61,11 @@ public class MusicHandler {
     private CascadeBot instance;
 
     @Getter
+    private String youtubeSourceName;
+    @Getter
+    private String twitchSourceName;
+
+    @Getter
     private static Map<Long, CascadePlayer> players = new HashMap<>();
 
     public MusicHandler(CascadeBot instance) {
@@ -76,12 +82,18 @@ public class MusicHandler {
 
         YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager(false);
         youtubeAudioSourceManager.configureRequests(config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).setConnectTimeout(5000).build());
+        youtubeSourceName = youtubeAudioSourceManager.getSourceName();
 
         playerManager.registerSourceManager(youtubeAudioSourceManager);
 
+        TwitchStreamAudioSourceManager twitchAudioManager = new TwitchStreamAudioSourceManager();
+        twitchSourceName = twitchAudioManager.getSourceName();
+
+        playerManager.registerSourceManager(twitchAudioManager);
+
         playerManager.registerSourceManager(new BeamAudioSourceManager());
-        playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
-        playerManager.registerSourceManager(new SoundCloudAudioSourceManager());
+        playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
+        playerManager.registerSourceManager(new BandcampAudioSourceManager());
 
         if (Config.INS.getMusicNodes().size() > 0) {
             lavalink = new JdaLavalink(Config.INS.getBotId().toString(), Config.INS.getShardNum(), shardId -> instance.getShardManager().getShardById(shardId));
