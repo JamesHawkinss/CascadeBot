@@ -13,9 +13,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.cascadebot.cascadebot.CascadeBot;
 import org.cascadebot.cascadebot.UnicodeConstants;
 import org.cascadebot.cascadebot.commandmeta.CommandContext;
-import org.cascadebot.cascadebot.commandmeta.ICommandMain;
-import org.cascadebot.cascadebot.commandmeta.ISubCommand;
+import org.cascadebot.cascadebot.commandmeta.MainCommand;
 import org.cascadebot.cascadebot.commandmeta.Module;
+import org.cascadebot.cascadebot.commandmeta.SubCommand;
 import org.cascadebot.cascadebot.messaging.MessagingObjects;
 import org.cascadebot.cascadebot.music.CascadeLavalinkPlayer;
 import org.cascadebot.cascadebot.permissions.CascadePermission;
@@ -29,11 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class EqualizerCommand implements ICommandMain {
+public class EqualizerCommand extends MainCommand {
 
     @Override
     public void onCommand(Member sender, CommandContext context) {
-        if (!CascadeBot.INS.getMusicHandler().isLavalinkEnabled()) {
+        if (!CascadeBot.INS.getMusicHandler().getLavalinkEnabled()) {
             context.getTypedMessaging().replyDanger(context.i18n("commands.equalizer.not_lavalink"));
             return;
         }
@@ -82,6 +82,9 @@ public class EqualizerCommand implements ICommandMain {
             }
 
             player.setBand(currentBand.get(), ((float) gain) / 20f);
+            if (context.getData().getMusic().getPreserveEqualizer()) {
+                context.getData().getMusic().getEqualizerBands().replace(currentBand.get(), ((float) gain) / 20f);
+            }
 
             message.editMessage(getEqualizerEmbed(player.getCurrentBands(), currentBand.get(), runner.getUser(), context).build()).override(true).queue();
         }));
@@ -97,10 +100,13 @@ public class EqualizerCommand implements ICommandMain {
             }
 
             player.setBand(currentBand.get(), ((float) gain) / 20f);
+            if (context.getData().getMusic().getPreserveEqualizer()) {
+                context.getData().getMusic().getEqualizerBands().replace(currentBand.get(), ((float) gain) / 20f);
+            }
 
             message.editMessage(getEqualizerEmbed(player.getCurrentBands(), currentBand.get(), runner.getUser(), context).build()).override(true).queue();
         }));
-        context.getUIMessaging().sendButtonedMessage(getEqualizerEmbed(player.getCurrentBands(), currentBand.get(), context.getUser(), context).build(), buttonGroup);
+        context.getUiMessaging().sendButtonedMessage(getEqualizerEmbed(player.getCurrentBands(), currentBand.get(), context.getUser(), context).build(), buttonGroup);
     }
 
     private String getEqualizerString(Map<Integer, Float> bands, int currentBand) {
@@ -204,7 +210,7 @@ public class EqualizerCommand implements ICommandMain {
     }
 
     @Override
-    public Module getModule() {
+    public Module module() {
         return Module.MUSIC;
     }
 
@@ -214,12 +220,12 @@ public class EqualizerCommand implements ICommandMain {
     }
 
     @Override
-    public CascadePermission getPermission() {
+    public CascadePermission permission() {
         return CascadePermission.of("equalizer", true);
     }
 
     @Override
-    public Set<ISubCommand> getSubCommands() {
+    public Set<SubCommand> subCommands() {
         return Set.of(new EqualizerResetSubCommand());
     }
 }

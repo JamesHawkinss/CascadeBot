@@ -7,20 +7,20 @@ package org.cascadebot.cascadebot.commands.management;
 
 import net.dv8tion.jda.api.entities.Member;
 import org.cascadebot.cascadebot.commandmeta.CommandContext;
-import org.cascadebot.cascadebot.commandmeta.ISubCommand;
+import org.cascadebot.cascadebot.commandmeta.SubCommand;
 import org.cascadebot.cascadebot.data.objects.Tag;
 import org.cascadebot.cascadebot.permissions.CascadePermission;
 
-public class TagCategorySubCommand implements ISubCommand {
+public class TagCategorySubCommand extends SubCommand {
 
     @Override
     public void onCommand(Member sender, CommandContext context) {
         if (context.getArgs().length < 2) {
-            context.getUIMessaging().replyUsage();
+            context.getUiMessaging().replyUsage();
             return;
         }
 
-        Tag tag = context.getCoreSettings().getTag(context.getArg(0));
+        Tag tag = context.getData().getManagement().getTag(context.getArg(0));
 
         String tagName = context.getArg(0).toLowerCase();
         String category = context.getArg(1).toLowerCase();
@@ -45,7 +45,7 @@ public class TagCategorySubCommand implements ISubCommand {
     }
 
     @Override
-    public CascadePermission getPermission() {
+    public CascadePermission permission() {
         return CascadePermission.of("tag.category", false);
     }
 
